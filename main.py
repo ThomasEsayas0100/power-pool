@@ -1,10 +1,35 @@
+import math
+
 import pygame
 import numpy as np
+from math import sqrt, sin, cos, tan, degrees as deg
 
 g = 9.81
 m = .17
 r = 10
 timeInterval = 1/150
+
+def rollingFriction(m , v):
+    c = 0
+    Fn = m*g
+    v = np.abs(v)
+    if v <= 0:
+        rollingFriction = 0
+    else:
+        rollingFriction = c*Fn
+    return 0
+
+def getValue(value):
+    absValue = np.abs(value)
+    if value == 0:
+        return 0
+
+    if value / absValue == 1:
+        return 1
+    elif value / absValue == -1:
+        return -1
+
+
 
 def checkCollison(Ball):
     collided = []
@@ -36,8 +61,13 @@ def BallCollision(b1, b2, m1, m2, u1, u2):
     #b1.vx, b1.vy = 0, 50
     #b2.vx, b2.vy = 0, 0
 
-    b1.vx, b1.vy = v1x, v1y
-    b2.vx, b2.vy = v2x, v2y
+    v1 = sqrt(v1x**2 + v1y**2)
+    v2 = sqrt(v2x**2 + v2y**2)
+    theta = deg(tan((b2.y-b1.y)/(b2.x-b1.x)))
+
+
+    b1.vx, b1.vy = v1*sin(theta), v1*cos(theta)
+    b2.vx, b2.vy = v2*sin(theta), v2*cos(theta)
 
     #return ((v1x, v1y),(v2x,v2y))
 
@@ -52,23 +82,24 @@ class Ball:
 
     def motion(self):
         data = []
+        Ax = (getValue(self.vx) * rollingFriction(self.m, self.vx)) / self.m
+        Ay = (getValue(self.vy) * rollingFriction(self.m, self.vy)) / self.m
 
-
-        self.vx = self.vx #+ Ax * timeInterval
-        self.vy = self.vy #+ Ay * timeInterval
+        self.vx = self.vx + Ax * timeInterval
+        self.vy = self.vy + Ay * timeInterval
         self.vz = self.vy #+ Az * timeInterval
 
-        self.x = self.x + self.vx * timeInterval #+ 1 / 2 * (Ax) * (timeInterval ** 2)
-        self.y = self.y + self.vy * timeInterval #+ 1 / 2 * (Ay) * (timeInterval ** 2)
+        self.x = self.x + self.vx * timeInterval + 1 / 2 * (Ax) * (timeInterval ** 2)
+        self.y = self.y + self.vy * timeInterval + 1 / 2 * (Ay) * (timeInterval ** 2)
         self.z = self.y + self.vy * timeInterval #+ 1 / 2 * (Ay) * (timeInterval ** 2)
         checkCollison(Ball)
 
 
         #data.append([x, y, Vx, Vy, Ax, Ay, t])
 
-ball1 = Ball(*(100,100,0,100,100,0,0,0,0, m))
-ball2 = Ball(*(300,300,0,-20,-20,0,0,0,0, m))
-ball3 = Ball(*(200,250,0,20,-20,0,0,0,0, m))
+ball1 = Ball(*(100,100,0,0,100,0,0,0,0, m))
+ball2 = Ball(*(100,300,0,0,-100,0,0,0,0, m))
+ball3 = Ball(*(200,250,0,5,-5,0,0,0,0, m))
 
 WIDTH, HEIGHT = 1000, 500
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -94,6 +125,7 @@ def main():
     clock = pygame.time.Clock()
     run = True
     while run:
+        print(ball1.vx)
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
