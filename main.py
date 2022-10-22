@@ -1,5 +1,3 @@
-import math
-
 import pygame
 import numpy as np
 from math import sqrt, sin, cos, tan, degrees as deg
