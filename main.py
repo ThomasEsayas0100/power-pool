@@ -5,7 +5,7 @@ from math import sqrt, sin, cos, tan, degrees as deg
 g = 9.81
 m = .17
 r = 10
-timeInterval = 1/150
+timeInterval = 1/5000
 
 def rollingFriction(m , v):
     c = 0
@@ -36,12 +36,10 @@ def checkCollison(Ball):
         for b in range(len(instances) - 1, a, -1):
             ballA, ballB = instances[a], instances[b]
             dist = ((ballA.x - ballB.x)**2 + (ballA.y - ballB.y)**2 + (ballA.z - ballB.z)**2)**0.5
-            if dist <= 2*r and dist != 0 and not(f"{a}{b}" in collided):
+            if dist <= 2*r and not(f"{a}{b}" in collided) and dist != 0:
                 collided.append(f"{a}{b}")
+                print(True)
                 BallCollision(ballA, ballB, m, m, (ballA.vx, ballA.vy), (ballB.vx, ballB.vy))
-
-
-
 
 def BallCollision(b1, b2, m1, m2, u1, u2):
     u1x = u1[0] #INITIAL VELOCITY
@@ -56,16 +54,20 @@ def BallCollision(b1, b2, m1, m2, u1, u2):
     v2x = ((2 * m1) / (m1 + m2)) * u1x + ((m2 - m1) / (m1 + m2)) * u2x
     v2y = ((2 * m1) / (m1 + m2)) * u1y + ((m2 - m1) / (m1 + m2)) * u2y
 
-    #b1.vx, b1.vy = 0, 50
-    #b2.vx, b2.vy = 0, 0
+    b1.vx, b1.vy = -100, 0
+    b2.vx, b2.vy = 0, 0
 
     v1 = sqrt(v1x**2 + v1y**2)
     v2 = sqrt(v2x**2 + v2y**2)
-    theta = deg(tan((b2.y-b1.y)/(b2.x-b1.x)))
+    if b2.x != b1.x:
+        theta = deg(tan((b2.y-b1.y)/(b2.x-b1.x)))
+    else:
+        theta = 0
 
+    #b1.vx, b1.vy = v1*cos(theta), v1*sin(theta)
+    #b2.vx, b2.vy = -v2*cos(theta), v2*sin(theta)
 
-    b1.vx, b1.vy = v1*sin(theta), v1*cos(theta)
-    b2.vx, b2.vy = v2*sin(theta), v2*cos(theta)
+    print(theta)
 
     #return ((v1x, v1y),(v2x,v2y))
 
@@ -80,8 +82,8 @@ class Ball:
 
     def motion(self):
         data = []
-        Ax = (getValue(self.vx) * rollingFriction(self.m, self.vx)) / self.m
-        Ay = (getValue(self.vy) * rollingFriction(self.m, self.vy)) / self.m
+        Ax = 0 #(getValue(self.vx) * rollingFriction(self.m, self.vx)) / self.m
+        Ay = 0 #(getValue(self.vy) * rollingFriction(self.m, self.vy)) / self.m
 
         self.vx = self.vx + Ax * timeInterval
         self.vy = self.vy + Ay * timeInterval
@@ -95,13 +97,13 @@ class Ball:
 
         #data.append([x, y, Vx, Vy, Ax, Ay, t])
 
-ball1 = Ball(*(100,100,0,0,100,0,0,0,0, m))
-ball2 = Ball(*(100,300,0,0,-100,0,0,0,0, m))
+ball1 = Ball(*(100,100,0,100,0,0,0,0,0, m))
+ball2 = Ball(*(300,100,0,-100,0,0,0,0,0, m))
 ball3 = Ball(*(200,250,0,5,-5,0,0,0,0, m))
 
 WIDTH, HEIGHT = 1000, 500
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-FPS = 60
+FPS = 5000
 WHITE  = (255, 255, 255)
 
 
@@ -123,7 +125,6 @@ def main():
     clock = pygame.time.Clock()
     run = True
     while run:
-        print(ball1.vx)
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
