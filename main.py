@@ -28,8 +28,9 @@ def getValue(value):
         return -1
 
 
-
+prior = [0,0,0]
 def checkCollison(Ball):
+    global prior
     collided = []
     instances = Ball.instances
     for a in range(len(instances)):
@@ -37,9 +38,10 @@ def checkCollison(Ball):
             ballA, ballB = instances[a], instances[b]
             dist = ((ballA.x - ballB.x)**2 + (ballA.y - ballB.y)**2 + (ballA.z - ballB.z)**2)**0.5
             if dist <= 2*r and not(f"{a}{b}" in collided) and dist != 0:
-                collided.append(f"{a}{b}")
-                print(True)
-                BallCollision(ballA, ballB, m, m, (ballA.vx, ballA.vy), (ballB.vx, ballB.vy))
+                if not all(elem in list(vars(ballA).values())[0:3] for elem in prior):
+                    collided.append(f"{a}{b}")
+                    BallCollision(ballA, ballB, m, m, (ballA.vx, ballA.vy), (ballB.vx, ballB.vy))
+                    prior = list(vars(ballA).values())[0:3]
 
 def BallCollision(b1, b2, m1, m2, u1, u2):
     u1x = u1[0] #INITIAL VELOCITY
@@ -54,8 +56,8 @@ def BallCollision(b1, b2, m1, m2, u1, u2):
     v2x = ((2 * m1) / (m1 + m2)) * u1x + ((m2 - m1) / (m1 + m2)) * u2x
     v2y = ((2 * m1) / (m1 + m2)) * u1y + ((m2 - m1) / (m1 + m2)) * u2y
 
-    b1.vx, b1.vy = -100, 0
-    b2.vx, b2.vy = 0, 0
+    #b1.vx, b1.vy = -100, 0
+    #b2.vx, b2.vy = 0, 0
 
     v1 = sqrt(v1x**2 + v1y**2)
     v2 = sqrt(v2x**2 + v2y**2)
@@ -64,8 +66,8 @@ def BallCollision(b1, b2, m1, m2, u1, u2):
     else:
         theta = 0
 
-    #b1.vx, b1.vy = v1*cos(theta), v1*sin(theta)
-    #b2.vx, b2.vy = -v2*cos(theta), v2*sin(theta)
+    b1.vx, b1.vy = v1*cos(theta+180), v1*sin(theta+180)
+    b2.vx, b2.vy = v2*cos(theta), v2*sin(theta)
 
     print(theta)
 
@@ -73,7 +75,7 @@ def BallCollision(b1, b2, m1, m2, u1, u2):
 
 class Ball:
     instances = []
-    def __init__(self, x, y, z, vx, vy, vz, ax, ay, az, m):
+    def __init__(self, x, y, z, vx, vy, vz, ax, ay, az, m, ):
         self.__class__.instances.append(self)
         self.x, self.y, self.z = x, y, z
         self.vx, self.vy, self.vz = vx, vy, vz
@@ -81,7 +83,6 @@ class Ball:
         self.m = m
 
     def motion(self):
-        data = []
         Ax = 0 #(getValue(self.vx) * rollingFriction(self.m, self.vx)) / self.m
         Ay = 0 #(getValue(self.vy) * rollingFriction(self.m, self.vy)) / self.m
 
@@ -92,13 +93,11 @@ class Ball:
         self.x = self.x + self.vx * timeInterval + 1 / 2 * (Ax) * (timeInterval ** 2)
         self.y = self.y + self.vy * timeInterval + 1 / 2 * (Ay) * (timeInterval ** 2)
         self.z = self.y + self.vy * timeInterval #+ 1 / 2 * (Ay) * (timeInterval ** 2)
+
         checkCollison(Ball)
 
-
-        #data.append([x, y, Vx, Vy, Ax, Ay, t])
-
-ball1 = Ball(*(100,100,0,100,0,0,0,0,0, m))
-ball2 = Ball(*(300,100,0,-100,0,0,0,0,0, m))
+ball1 = Ball(*(100,100,0,0,100,0,0,0,0, m))
+ball2 = Ball(*(100,300,0,0,-100,0,0,0,0, m))
 ball3 = Ball(*(200,250,0,5,-5,0,0,0,0, m))
 
 WIDTH, HEIGHT = 1000, 500
