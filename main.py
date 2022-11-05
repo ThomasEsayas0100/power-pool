@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from math import pi, sin, cos, tan, atan, degrees as deg
+from math import pi, sin, cos, tan, atan2, degrees as deg
 
 g = 9.81
 m = .17
@@ -18,16 +18,6 @@ def rollingFriction(m , v):
     else:
         rollingFriction = c*Fn
     return 0
-
-def vector_angle(a, b):
-    """
-    Calculates the angle between two 2D vectors, A and B, in radians.
-    """
-
-    alpha_rad = np.arccos((a[0]*b[0] + a[1]*b[1])
-                            /((a[0]**2 + a[1]**2)**0.5
-                              * (b[0]**2 + b[1]**2)**0.5))
-    return alpha_rad
 
 def getValue(value):
     absValue = np.abs(value)
@@ -63,30 +53,21 @@ def checkCollison(Ball):
                 collided.append(f"{a}{b}")
 
 def BallCollision(b1, b2, u1, u2):
-    u1x = u1[0]  # INITIAL VELOCITY
-    u1y = u1[1]
-
-    u2x = u2[0]
-    u2y = u2[1]
-
     deltaX = b2.x - b1.x
     deltaY = b2.y - b1.y
 
-    if b1.x != b2.x:
-        angle = atan(deltaY / deltaX)
-    else:
-        angle = 0
-
+    angle = atan2(deltaY, deltaX)
+    print(sin(angle))
     # Rotate it to where the collision line is parallel to the horizontal
     u1x = b1.vx * cos(angle) + b1.vy * sin(angle)
     u1y = b1.vy * cos(angle) - b1.vx * sin(angle)
     u2x = b2.vx * cos(angle) + b2.vy * sin(angle)
     u2y = b2.vy * cos(angle) - b2.vx * sin(angle)
 
-    v1x = ((b1.m - b2.m) / (b1.m + b2.m)) * u1x + ((2 * b2.m) / (b1.m + b2.m)) * u2x
+    v1x = ((b1.m-b2.m)*u1x+2*b2.m*u2x)/(b1.m+b2.m)
     v1y = u1y#((b1.m - b2.m) / (b1.m + b2.m)) * u1y + ((2 * b2.m) / (b1.m + b2.m)) * u2y
 
-    v2x = ((2 * b1.m) / (b1.m + b2.m)) * u1x + ((b2.m - b1.m) / (b1.m + b2.m)) * u2x
+    v2x = ((b2.m-b1.m)*u2x+2*b1.m*u1x)/(b1.m+b2.m)
     v2y = u2y#((2 * b1.m) / (b1.m + b2.m)) * u1y + ((b2.m - b1.m) / (b1.m + b2.m)) * u2y
 
     midpointX = (b1.x + b2.x) / 2
@@ -96,21 +77,14 @@ def BallCollision(b1, b2, u1, u2):
     b1.y += (b1.y - midpointY)/2
     b2.x += (b2.x - midpointX)/2
     b2.y += (b2.y - midpointY)/2
-    x1, y1 = 0, 0
-    x2, y2 = deltaX/2, deltaY/2
-    overlap = 20 - ((deltaX)**2 + (deltaY)**2)**0.5
-    #b1.x += overlap*cos(angle)
-
 
     #Rotate back
-    v1x = v1x * cos(angle) - v1y * sin(angle)
-    v1y = v1y * cos(angle) + v1x * sin(angle)
-    v2x = v2x * cos(angle) - v2y * sin(angle)
-    v2y = v2y * cos(angle) + v2x * sin(angle)
+    b1.vx = v1x * cos(angle) - v1y * sin(angle)
+    b1.vy = v1y * cos(angle) + v1x * sin(angle)
+    b2.vx = v2x * cos(angle) - v2y * sin(angle)
+    b2.vy = v2y * cos(angle) + v2x * sin(angle)
 
-    b1.vx, b1.vy = v1x, v1y
-    b2.vx, b2.vy = v2x, v2y
-    print(b1.vx, b1.vy)
+
 
 
 
