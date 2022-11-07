@@ -6,8 +6,8 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 FPS = 60
 WHITE  = (255, 255, 255)
 
-ball1 = Ball(*(100,100,0,0,100,0,0,0,0, m))
-ball2 = Ball(*(101,200,0,0,0,0,0,0,0, m))
+ball1 = Ball(*(100,100,0,100,0, m))
+ball2 = Ball(*(115,200,0,-10,0, m))
 #ball3 = Ball(*(200,250,0,5,-5,0,0,0,0, m))
 
 def draw_window():

@@ -9,48 +9,27 @@ timeInterval = 1/60
 
 redBall = pygame.transform.scale(pygame.image.load("Assets/1.png"), (20,20))
 
-def rollingFriction(m , v):
-    c = 0
-    Fn = m*g
-    v = np.abs(v)
-    if v <= 0:
-        rollingFriction = 0
-    else:
-        rollingFriction = c*Fn
-    return 0
-
-def getValue(value):
+def mag(value):
     absValue = np.abs(value)
-    if value == 0:
-        return 0
+    return absValue/value
 
-    if value / absValue == 1:
-        return 1
-    elif value / absValue == -1:
-        return -1
+def friction(b):
+    Ff = 0.01 * (b.m * g)
+    if -b.w*r >= mag(b.vx**2 + b.vy**2): #If sliding
+        Ff = 0.2 * (b.m * g)
+        print(b, b.w)
+    return Ff * 100
 
 
 def checkCollison(Ball):
     global prior
-    collided = []
     instances = Ball.instances
-
-
-
     for a in range(len(instances)):
         for b in range(len(instances) - 1, a, -1):
             ballA, ballB = instances[a], instances[b]
-            dist = ((ballA.x - ballB.x)**2 + (ballA.y - ballB.y)**2 + (ballA.z - ballB.z)**2)**0.5
-            if dist <= 2*r and not(f"{a}{b}" in collided) and dist != 0:
-                balls = pygame.sprite.Group()
-                balls.add(ballA)
-                balls.add(ballB)
-                if pygame.sprite.collide_rect(*balls):
-                    collision = pygame.sprite.collide_circle(*balls)
-                    if collision:
-                        BallCollision(ballA, ballB, (ballA.vx, ballA.vy), (ballB.vx, ballB.vy))
-
-                collided.append(f"{a}{b}")
+            dist = ((ballA.x - ballB.x)**2 + (ballA.y - ballB.y)**2)**0.5
+            if dist <= 2*r:
+                BallCollision(ballA, ballB, (ballA.vx, ballA.vy), (ballB.vx, ballB.vy))
 
 def BallCollision(b1, b2, u1, u2):
     deltaX = b2.x - b1.x
@@ -84,35 +63,38 @@ def BallCollision(b1, b2, u1, u2):
     b2.vx = v2x * cos(angle) - v2y * sin(angle)
     b2.vy = v2y * cos(angle) + v2x * sin(angle)
 
-
-
-
-
 class Ball(pygame.sprite.Sprite):
     instances = []
-    def __init__(self, x, y, z, vx, vy, vz, ax, ay, az, m):
+    def __init__(self, x, y, vx, vy, ax, ay):
         super(Ball, self).__init__()
         self.image = pygame.transform.scale(pygame.image.load("Assets/1.png"), (20,20))
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image.convert_alpha())
 
         self.__class__.instances.append(self)
-        self.x, self.y, self.z = x, y, z
-        self.vx, self.vy, self.vz = vx, vy, vz
-        self.ax, self.ay, self.az = ax, ay, az
+        self.x, self.y = x, y
+        self.vx, self.vy = vx, vy
+        self.ax, self.ay = ax, ay
+        self.w, self.tau = 0, 0
         self.m = m
+        self.I = 2/5*(m)*(r)**2
 
     def motion(self):
-        Ax = 0 #(getValue(self.vx) * rollingFriction(self.m, self.vx)) / self.m
-        Ay = 0 #(getValue(self.vy) * rollingFriction(self.m, self.vy)) / self.m
+        Fnet = friction(self)
+
+        a = atan2(self.vy, self.vx)
+        Ax = -Fnet * cos(a)
+        Ay = -Fnet * sin(a)
 
         self.vx = self.vx + Ax * timeInterval
         self.vy = self.vy + Ay * timeInterval
-        self.vz = self.vy #+ Az * timeInterval
+
         self.x = self.x + self.vx * timeInterval + 1 / 2 * (Ax) * (timeInterval ** 2)
         self.y = self.y + self.vy * timeInterval + 1 / 2 * (Ay) * (timeInterval ** 2)
-        self.z = self.y + self.vy * timeInterval #+ 1 / 2 * (Ay) * (timeInterval ** 2)
 
-        checkCollison(Ball)
+        self.tau = r * mag(Fnet)
+        self.w = self.w - (self.tau / self.I) * timeInterval
+
+        checkCollison(self)
 
 
