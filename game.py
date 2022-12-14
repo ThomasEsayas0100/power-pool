@@ -1,18 +1,18 @@
 import pygame
 from main import *
+from vector import Vector
 
 WIDTH, HEIGHT = 1000, 500
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 FPS = 1 / t
 WHITE  = (255, 255, 255)
 
-ball1 = Ball(*("1", 100+200,100,0, 100, 0, m*4))
-ball2 = Ball(*("2", 115+200,200,0,-10, 0, m))
+ball1 = Ball(*("1", 100+100,200,500, 0, 0, m*4, Vector))
+ball2 = Ball(*("2", 130+200,200,0,0, 0, m, Vector))
 #ball3 = Ball(*(200,250,0,5,-5,0,0,0,0, m))
 
 def draw_window():
     WIN.fill(WHITE)
-
     ball1.motion()
     ball2.motion()
     #ball3.motion()
