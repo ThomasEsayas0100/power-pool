@@ -9,6 +9,11 @@ r = 10
 t = 1 / 60
 time = 0
 
+WIDTH, HEIGHT = 1000, 500
+WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+FPS = 1 / t
+WHITE  = (255, 255, 255)
+
 # Coeficients of Friction:
 coRR = 0.01  # Rolling Resistance
 coSF = 0.2  # Sliding Friction
@@ -93,9 +98,9 @@ class Ball(pygame.sprite.Sprite):
 
         self.ax, self.ay = ax, ay
 
-        self.wx, self.wy, self.wz = -100, 0, 0
+        self.wx, self.wy, self.wz = 0, 0, 0
         self.wxy = Vector(self.wx, self.wy)
-        self.angU = angle_between(normalize(self.v),normalize(self.wxy))
+        self.angU = angle_between(normalize(self.v), normalize(self.wxy))
         self.uO = (self.v + self.wxy)
         self.u = self.uO
 
@@ -147,17 +152,10 @@ class Ball(pygame.sprite.Sprite):
         Ax = -Fnet * cos(a)
         Ay = -Fnet * sin(a)
 
-        normU = normalize(self.v + self.wxy)
-        magU = np.hypot(length(self.v), length(self.wxy))
-        dir = normalize(self.u)
 
-        self.u = Vector((self.v + self.wxy).x,
-                        (self.v + self.wxy).y)
+        self.u = self.uO - Vector(Fnet, Fnet)
 
         self.angU = atan2(self.v.y, self.v.x)
-        amgV = atan2(self.v.y, self.v.x)
-        if self.ID == "2":
-            print("ID2", self.v.y)
 
         self.v = self.v + normalize(self.u) * Vector(-Fnet * t, -Fnet * t)
 
@@ -176,16 +174,14 @@ class Ball(pygame.sprite.Sprite):
 
     def motion(self):
         global time
-        if self.ID == '1':
-            pass#print(length(self.wxy))
+
         if length(self.wxy) * r <= length(self.v) or self.isRolling:
             self.rolling()
             self.isRolling = True
-            if self.ID == '1':
-                 print("rolling")
+
         else:
             self.sliding()
-            if self.ID == '1':
-                 print("sliding")
+
         checkCollison(self)
+        WIN.blit(pygame.transform.scale(pygame.image.load(f"Assets/{self.ID}.png"), (20, 20)), (self.x - r, self.y - r))
         time += t
